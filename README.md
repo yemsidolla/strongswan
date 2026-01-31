@@ -58,13 +58,38 @@ sudo cp your-ca.crt /etc/ipsec.d/cacerts/
 sudo chmod 600 /etc/ipsec.d/private/*.key
 ```
 
+#### Generating the server key and certificate
+
+If you don’t have a server cert yet, generate the private key and certificate with OpenSSL. Use a FQDN that matches `leftid` in `ipsec.conf` (e.g. `vpn-strongswan.bongloy.asia`).
+
+**1. Generate the private key** (`vpn-server.key`):
+
+```bash
+openssl genrsa -out vpn-server.key 4096
+chmod 600 vpn-server.key
+```
+
+**2a. Get a cert from your CA** (recommended for production): create a CSR and submit it to your CA:
+
+```bash
+openssl req -new -key vpn-server.key -out vpn-server.csr -subj "/CN=vpn-strongswan.bongloy.asia"
+```
+
+**2b. Or self-sign** (testing or internal use):
+
+```bash
+openssl req -x509 -key vpn-server.key -out vpn-server.crt -days 3650 -subj "/CN=vpn-strongswan.bongloy.asia"
+```
+
+**3. Deploy** on the server: copy `vpn-server.key` to `/etc/ipsec.d/private/`, `vpn-server.crt` to `/etc/ipsec.d/certs/`, and any CA cert to `/etc/ipsec.d/cacerts/`. In `ipsec.secrets` use `: RSA vpn-server.key`; in `ipsec.conf` use `leftcert=vpn-server.crt` and `leftid=@vpn-strongswan.bongloy.asia`.
+
 ### 3. ipsec.conf
 
 Update identities and subnets for your environment:
 
 ```bash
 sudo nano /etc/ipsec.conf
-# Set leftid=@your-vpn.example.com, rightsourceip, rightdns, etc.
+# Set leftid=@vpn-strongswan.bongloy.asia, rightsourceip, rightdns, etc.
 ```
 
 ### 4. Reload
@@ -75,8 +100,9 @@ sudo ipsec reload
 
 ## Troubleshooting
 
-- Logs: `sudo journalctl -u strongswan -f` or `sudo tail -f /var/log/strongswan/charon.log`
+- Logs: `sudo journalctl -u strongswan-starter -f` or `sudo tail -f /var/log/strongswan/charon.log`
 - Status: `sudo ipsec statusall` and `sudo ipsec status`
+- Service (Ubuntu): `systemctl status strongswan-starter`
 
 ## Production
 

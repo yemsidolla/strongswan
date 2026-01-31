@@ -97,17 +97,15 @@ if ! grep -q 'net.ipv4.ip_forward=1' /etc/sysctl.conf 2>/dev/null; then
     sysctl -w net.ipv4.ip_forward=1
 fi
 
-# 6. Systemd
+# 6. Systemd (Ubuntu uses strongswan-starter.service)
 if [ "$NO_START" = false ]; then
     log_info "Enabling and starting services..."
-    systemctl enable strongswan 2>/dev/null || true
-    systemctl enable ipsec     2>/dev/null || true
-    systemctl restart strongswan
-    systemctl restart ipsec
+    systemctl enable strongswan-starter 2>/dev/null || true
+    systemctl restart strongswan-starter
     sleep 2
-    systemctl is-active --quiet strongswan && log_info "StrongSwan is running" || log_warn "Check: systemctl status strongswan"
+    systemctl is-active --quiet strongswan-starter && log_info "StrongSwan is running" || log_warn "Check: systemctl status strongswan-starter"
 else
-    log_info "Skipping start (--no-start). Run: systemctl enable --now strongswan ipsec"
+    log_info "Skipping start (--no-start). Run: systemctl enable --now strongswan-starter"
 fi
 
 # 7. Optional firewall

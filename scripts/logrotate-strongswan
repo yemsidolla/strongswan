@@ -10,7 +10,7 @@
     create 0644 root root
     sharedscripts
     postrotate
-        systemctl reload strongswan 2>/dev/null || /usr/sbin/ipsec reload 2>/dev/null || true
+        systemctl reload strongswan-starter 2>/dev/null || /usr/sbin/ipsec reload 2>/dev/null || true
     endscript
 }
 
@@ -24,6 +24,6 @@
     create 0644 root root
     sharedscripts
     postrotate
-        systemctl reload strongswan 2>/dev/null || /usr/sbin/ipsec reload 2>/dev/null || true
+        systemctl reload strongswan-starter 2>/dev/null || /usr/sbin/ipsec reload 2>/dev/null || true
     endscript
 }
