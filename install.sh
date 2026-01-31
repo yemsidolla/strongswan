@@ -59,14 +59,14 @@ chmod 755 /var/log/strongswan
 mkdir -p /etc/ipsec.d/certs /etc/ipsec.d/private /etc/ipsec.d/cacerts
 chmod 755 /etc/ipsec.d /etc/ipsec.d/certs /etc/ipsec.d/cacerts
 chmod 700 /etc/ipsec.d/private
-mkdir -p /etc/strongswan/strongswan.d
+mkdir -p /etc/strongswan.d
 
-# 3. Deploy config from repo
+# 3. Deploy config from repo (default paths: /etc/ipsec.conf, /etc/strongswan.conf, /etc/strongswan.d/)
 if [ -d "$CONFIG_SRC" ]; then
-    log_info "Deploying configuration from $CONFIG_SRC ..."
+    log_info "Deploying configuration from $CONFIG_SRC to /etc/ ..."
     [ -f "$CONFIG_SRC/ipsec.conf" ]          && cp "$CONFIG_SRC/ipsec.conf" /etc/ipsec.conf
-    [ -f "$CONFIG_SRC/strongswan.conf" ]     && cp "$CONFIG_SRC/strongswan.conf" /etc/strongswan/strongswan.conf
-    [ -f "$CONFIG_SRC/charon-logging.conf" ] && cp "$CONFIG_SRC/charon-logging.conf" /etc/strongswan/strongswan.d/charon-logging.conf
+    [ -f "$CONFIG_SRC/strongswan.conf" ]     && cp "$CONFIG_SRC/strongswan.conf" /etc/strongswan.conf
+    [ -f "$CONFIG_SRC/charon-logging.conf" ] && cp "$CONFIG_SRC/charon-logging.conf" /etc/strongswan.d/charon-logging.conf
     if [ -f "$CONFIG_SRC/ipsec.secrets.example" ]; then
         if [ ! -f /etc/ipsec.secrets ]; then
             cp "$CONFIG_SRC/ipsec.secrets.example" /etc/ipsec.secrets
