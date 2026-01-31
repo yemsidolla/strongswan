@@ -16,6 +16,14 @@ sudo ./install.sh --firewall   # Also configure UFW for IKE, NAT-T, ESP
 
 Config is copied from `config/` to `/etc/`. You must create or edit `/etc/ipsec.secrets` and add certificates under `/etc/ipsec.d/`.
 
+### Remove and reinstall
+
+```bash
+sudo ./uninstall.sh              # Remove config only; packages stay
+sudo ./uninstall.sh --purge     # Remove config and purge packages
+sudo ./install.sh               # Reinstall / redeploy
+```
+
 ## Directory Structure
 
 ```
@@ -23,6 +31,7 @@ Config is copied from `config/` to `/etc/`. You must create or edit `/etc/ipsec.
 ├── README.md
 ├── .gitignore
 ├── install.sh
+├── uninstall.sh
 ├── config/
 │   ├── ipsec.conf
 │   ├── ipsec.secrets.example
