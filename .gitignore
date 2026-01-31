@@ -1,0 +1,20 @@
+# StrongSwan - do not commit secrets or sensitive data
+
+config/ipsec.secrets
+
+certs/
+private/
+cacerts/
+logs/
+backups/
+
+.env
+.env.*
+*.log
+
+.DS_Store
+Thumbs.db
+.vscode/
+.idea/
+*.swp
+*.swo

@@ -1,6 +1,6 @@
 # StrongSwan IPsec VPN (Ubuntu)
 
-Production-ready StrongSwan IPsec VPN server on Ubuntu. Native installation using official packages and systemd.
+Production-ready StrongSwan IPsec VPN server on Ubuntu. Single install from repo root.
 
 ## Prerequisites
 
@@ -10,99 +10,115 @@ Production-ready StrongSwan IPsec VPN server on Ubuntu. Native installation usin
 ## Quick Start
 
 ```bash
-cd ubuntu
 sudo ./install.sh              # Install StrongSwan, deploy config, start services
-sudo ./install.sh --firewall   # Also configure UFW for IKE/NAT-T/ESP
+sudo ./install.sh --firewall   # Also configure UFW for IKE, NAT-T, ESP
 ```
 
-See **[ubuntu/README.md](ubuntu/README.md)** for full instructions. Config is copied from `config/` to `/etc/`. You must create `/etc/ipsec.secrets` and add certificates under `/etc/ipsec.d/`.
+Config is copied from `config/` to `/etc/`. You must create or edit `/etc/ipsec.secrets` and add certificates under `/etc/ipsec.d/`.
 
-## Configuration
-
-### Directory Structure
+## Directory Structure
 
 ```
 .
+├── README.md
+├── .gitignore
+├── install.sh
 ├── config/
 │   ├── ipsec.conf
 │   ├── ipsec.secrets.example
 │   ├── strongswan.conf
 │   └── charon-logging.conf
-├── ubuntu/
-│   ├── README.md
-│   ├── install.sh
-│   ├── logrotate-strongswan
-│   └── scripts/
-│       ├── backup-etc.sh
-│       └── firewall.sh
-├── scripts/
-│   ├── security-audit.sh
-│   └── secrets-management.md
-├── README.md
-└── .gitignore
+└── scripts/
+    ├── backup-etc.sh
+    ├── firewall.sh
+    ├── logrotate-strongswan
+    ├── security-audit.sh
+    └── SECRETS.md
 ```
 
-### Important Notes
+## Configuration
 
-- **Secrets**: Keep `ipsec.secrets` secure (chmod 600).
-- **Certificates**: Place in `/etc/ipsec.d/certs`, `private`, `cacerts` after install; ensure correct permissions on private keys (600).
+### 1. ipsec.secrets
 
-## Security Considerations
+If the installer created `/etc/ipsec.secrets` from the example, edit it and add your private key reference and optional EAP users:
 
-1. **Secrets Management**: Use external secret management (Vault, AWS Secrets Manager) in production; see `scripts/secrets-management.md`.
-2. **Certificate Rotation**: Implement automated certificate rotation.
-3. **Firewall Rules**: Run `sudo ./ubuntu/scripts/firewall.sh` or configure UFW/iptables for UDP 500, 4500, ESP, AH.
-4. **Logging**: Monitor `/var/log/strongswan/` for suspicious activity.
-5. **Updates**: Run `sudo apt update && sudo apt upgrade strongswan` regularly.
+```bash
+sudo nano /etc/ipsec.secrets
+sudo chmod 600 /etc/ipsec.secrets
+```
+
+### 2. Certificates
+
+Place server cert, private key, and CA certs under `/etc/ipsec.d/`:
+
+```bash
+sudo cp your-server.crt /etc/ipsec.d/certs/
+sudo cp your-server.key /etc/ipsec.d/private/
+sudo cp your-ca.crt /etc/ipsec.d/cacerts/
+sudo chmod 600 /etc/ipsec.d/private/*.key
+```
+
+### 3. ipsec.conf
+
+Update identities and subnets for your environment:
+
+```bash
+sudo nano /etc/ipsec.conf
+# Set leftid=@your-vpn.example.com, rightsourceip, rightdns, etc.
+```
+
+### 4. Reload
+
+```bash
+sudo ipsec reload
+```
 
 ## Troubleshooting
 
-- Check logs: `sudo journalctl -u strongswan -f` or `sudo tail -f /var/log/strongswan/charon.log`
-- Verify configuration: `sudo ipsec statusall`
-- Test connectivity: `sudo ipsec status`
+- Logs: `sudo journalctl -u strongswan -f` or `sudo tail -f /var/log/strongswan/charon.log`
+- Status: `sudo ipsec statusall` and `sudo ipsec status`
 
-## Production Deployment
+## Production
 
-### 1. Backup
+Run these from the repo root.
 
-Back up `/etc` StrongSwan config:
+### Backup
 
 ```bash
-sudo ./ubuntu/scripts/backup-etc.sh
+sudo ./scripts/backup-etc.sh
 export BACKUP_RETENTION_DAYS=30
-sudo ./ubuntu/scripts/backup-etc.sh
+sudo ./scripts/backup-etc.sh
 ```
 
-Cron example (daily): `0 2 * * * /path/to/strongswan/ubuntu/scripts/backup-etc.sh`
+Cron example (daily): `0 2 * * * /path/to/strongswan/scripts/backup-etc.sh`
 
-### 2. Log Rotation
+### Log rotation
 
-Installer copies `ubuntu/logrotate-strongswan` to `/etc/logrotate.d/strongswan`. Main logs 30 days, error 90 days, debug 7 days.
+Installer copies `scripts/logrotate-strongswan` to `/etc/logrotate.d/strongswan`. Main logs 30 days, error 90 days.
 
-### 3. Secrets Management
-
-See `scripts/secrets-management.md` for HashiCorp Vault, AWS Secrets Manager, and migration guidance.
-
-### 4. Firewall
+### Firewall
 
 ```bash
-sudo ./ubuntu/scripts/firewall.sh
+sudo ./scripts/firewall.sh
 # Set VPN_CLIENT_POOL and VPN_INTERFACE if needed
 ```
 
-### 5. Security Audit and Updates
+### Security audit and updates
 
 ```bash
 ./scripts/security-audit.sh
 sudo apt update && sudo apt upgrade strongswan
 ```
 
-### Production Checklist
+### Secrets management
+
+See `scripts/SECRETS.md` for Vault, AWS Secrets Manager, and migration from plain text.
+
+## Production checklist
 
 - [ ] `/etc/ipsec.secrets` created and chmod 600
-- [ ] Certificates in `/etc/ipsec.d/`
+- [ ] Certificates in `/etc/ipsec.d/certs`, `private`, `cacerts`
 - [ ] Backup and log rotation configured
 - [ ] Firewall rules applied
 - [ ] Security audit passed
 - [ ] Secrets management in place (production)
-# strongswan

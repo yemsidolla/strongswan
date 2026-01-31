@@ -1,0 +1,29 @@
+# Logrotate for StrongSwan - install to /etc/logrotate.d/strongswan
+
+/var/log/strongswan/*.log {
+    daily
+    rotate 30
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+    sharedscripts
+    postrotate
+        systemctl reload strongswan 2>/dev/null || /usr/sbin/ipsec reload 2>/dev/null || true
+    endscript
+}
+
+/var/log/strongswan/*error*.log {
+    daily
+    rotate 90
+    compress
+    delaycompress
+    missingok
+    notifempty
+    create 0644 root root
+    sharedscripts
+    postrotate
+        systemctl reload strongswan 2>/dev/null || /usr/sbin/ipsec reload 2>/dev/null || true
+    endscript
+}
